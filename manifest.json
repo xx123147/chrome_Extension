@@ -1,0 +1,12 @@
+{
+  "name": "Web Info Grabber",
+  "description": "Get the current page title and URL, and copy the URL.",
+  "permissions": ["activeTab", "scripting"], 
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "hello_extensions.png"
+  }
+  
+}

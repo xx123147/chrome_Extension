@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Web Info Grabber</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h3>当前页面信息</h3>
+      <div id="info">
+        <p><strong>标题：</strong><span id="title">加载中...</span></p>
+        <p><strong>网址：</strong><a id="url" href="#" target="_blank">加载中...</a></p>
+      </div>
+
+      <div class="buttons">
+        <button id="refreshBtn">刷新</button>
+        <button id="copyBtn">复制 URL</button>
+      </div>
+
+      <div id="msg" class="msg"></div>
+      <small class="hint">提示：点击 “复制 URL” 需要在当前页面处于活动标签并允许交互。</small>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
