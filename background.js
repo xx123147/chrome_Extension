@@ -1,4 +1,5 @@
 // background.js
+//chrome Extension的事件机制，当我在某一个tab中点击icon,chrome会自动触发点击事件，并且告诉我是在哪个tab中点击的
 chrome.action.onClicked.addListener((tab) => {
   if (!tab || !tab.id) return;
   chrome.tabs.sendMessage(tab.id, { action: 'open_first' }, (response) => {

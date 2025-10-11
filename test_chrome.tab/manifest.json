@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Tabs API Demo",
+  "version": "1.0",
+  "permissions": [
+    "scripting",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
