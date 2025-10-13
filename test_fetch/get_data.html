@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Fetch 示例</title>
+</head>
+<body>
+  <h1>GitHub 用户信息</h1>
+  <input type="text" id="username" placeholder="输入 GitHub 用户名" />
+  <button id="fetchBtn">获取信息</button>
+  <pre id="result"></pre>
+
+  <script>
+    // 获取按钮和结果区域
+    const button = document.getElementById("fetchBtn");
+    const resultBox = document.getElementById("result");
+
+    // 按钮点击事件
+    button.addEventListener("click", async () => {
+      const username = document.getElementById("username").value.trim();
+      if (!username) {
+        resultBox.textContent = "⚠️ 请输入用户名！";
+        return;
+      }
+
+      // 构造 API 地址
+    //   const url = `https://api.github.com/users/${username}`;
+      const url = `https://www.cainiaojc.com/html/html-tutorial.html`;
+      resultBox.textContent = "⏳ 正在获取数据...";
+
+      try {
+        // 1️⃣ 发送 GET 请求
+        const response = await fetch(url);
+        console.log(response)
+        // 2️⃣ 检查响应状态
+        if (!response.ok) {
+          throw new Error(`HTTP 错误：${response.status}`);
+        }
+
+        // 3️⃣ 解析 JSON 数据
+        const data = await response.json();
+
+        // 4️⃣ 格式化输出结果
+        resultBox.textContent = JSON.stringify({
+          登录名: data.login,
+          昵称: data.name,
+          头像: data.avatar_url,
+          仓库数: data.public_repos,
+          粉丝数: data.followers,
+          主页: data.html_url
+        }, null, 2);
+
+      } catch (error) {
+        resultBox.textContent = `❌ 请求出错：${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

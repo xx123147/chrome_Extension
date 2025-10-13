@@ -84,25 +84,34 @@
 
   // ===== ASIN 提取函数 =====
   function extractASINFromPage() {
-    const span = document.querySelector("#search-results-panel > div.uR5H99PpPykrzLz130Dc > div.yHp1x76T8dejVA7HzZnW > div > div.WfeKoekShvVAvyStBN7x > div.GjaIyfwFzGkX5L3wv0zI > span:nth-child(1)");
-    if (!span) return null;
+    const span1 = document.querySelector("#search-results-panel > div.uR5H99PpPykrzLz130Dc > div.yHp1x76T8dejVA7HzZnW > div > div.WfeKoekShvVAvyStBN7x > div.GjaIyfwFzGkX5L3wv0zI > span:nth-child(1)");
+    const span2 = document.querySelector("#search-results-panel > div.uR5H99PpPykrzLz130Dc > div.yHp1x76T8dejVA7HzZnW > div > div.WfeKoekShvVAvyStBN7x > div.GjaIyfwFzGkX5L3wv0zI > kat-link[label]")
+    if (!span1 && !span2) return null;
 
-    const text = span.innerText.trim();
-    const match = text.match(/ASIN[:：]?\s*([A-Z0-9]{8,12})/i);
-    if (match) return match[1].toUpperCase();
-
-    return null;
+    const asin = span1.innerText.trim();
+    const mesg = span2.getAttribute("label").trim();
+    // const match = text.match(/ASIN[:：]?\s*([A-Z0-9]{8,12})/i);
+    // if (match) return match[1].toUpperCase();
+    return [asin,mesg]
     }
 
   async function waitForASIN(timeout = 5000) {
     const start = Date.now();
     let asin = null;
+    let mesg = null;
     while (Date.now() - start < timeout) {
-      asin = extractASINFromPage();
-      if (asin) return asin;
-      await wait(300);
+      try{
+        [asin,mesg] = extractASINFromPage();
+        if (asin&&mesg) return [asin,mesg];
+        await wait(300);
+      }
+      catch (error){
+        console.error("提取信息时出错：",error)
+      }
+
     }
-    return null;
+      console.warn("超时未提取到任何信息")
+      return [asin,mesg]
   }
 
   // ===== 主抓取逻辑 =====
@@ -129,12 +138,23 @@
       await wait(1500);
 
       // 获取 ASIN
-      const asin = await waitForASIN(6000);
-      if (asin) {
-        console.log(`✅ 第 ${i + 1} 项 ASIN:`, asin);
-        results.push({ index: i + 1, asin });
+      const [asin,mesg] = await waitForASIN(6000);
+      if (asin&&mesg) {
+        console.log(`✅ 第 ${i + 1} 项 ASIN 和 MESG:`, asin,mesg);
+        data = {ASIN:asin,MESG:mesg}
+        results.push({ index: i + 1, data });
       } else {
-        console.warn(`⚠️ 第 ${i + 1} 项未检测到 ASIN`);
+        console.warn(`⚠️ 第 ${i + 1} 项未检测到 ASIN 和 MESG`);
+        if (asin || mesg) {
+          results.push({
+            index: i + 1,
+            data: {
+              ASIN: asin || '未获取',
+              MESG: mesg || '未获取'
+            },
+            incomplete: true
+            });
+    }
       }
 
       // 点击返回按钮回列表页
@@ -148,20 +168,33 @@
       }
     }
 
-    console.log("✅ 抓取完成，共获取", results.length, "条 ASIN");
+    console.log("✅ 抓取完成，共获取", results.length, "条 数据");
     console.table(results);
 
+    // // 导出 CSV
+    // const csv = "index,ASIN\n" + results.map(r => `${r.index},${r.asin}`).join("\n");
+    // const blob = new Blob([csv], { type: "text/csv" });
+    // const url = URL.createObjectURL(blob);
+    // const a = document.createElement("a");
+    // a.href = url;
+    // a.download = "asins.csv";
+    // a.click();
+    // URL.revokeObjectURL(url);
+
+    // alert("✅ 已完成抓取并下载 asins.csv");
     // 导出 CSV
-    const csv = "index,ASIN\n" + results.map(r => `${r.index},${r.asin}`).join("\n");
+    const csv = "index,ASIN,MESG\n" + 
+        results.map(r => `${r.index},${r.data.ASIN},${r.data.MESG}`).join("\n");
+
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "asins.csv";
+    a.download = "asins_mesg.csv";
     a.click();
     URL.revokeObjectURL(url);
 
-    alert("✅ 已完成抓取并下载 asins.csv");
+    alert("✅ 已完成抓取并下载 asins_mesg.csv");
   }
 
   // ===== 接收扩展消息 =====
