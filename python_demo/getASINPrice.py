@@ -51,13 +51,24 @@ def fetch_amazon_info(asin):
         "Accept-Encoding": "gzip, deflate, br",
         "Referer": "https://www.amazon.co.uk/",
     }
+    cookies = {
+        "session-id": "259-4362666-6775734",
+        "ubid-acbuk": "2593145516-5774178-",
+        "session-token": "HkaqYFNPWD3/ltTacgSnV4mMPEY55ATnmP4zm2LtzSKaq1EOZm2Dqo/EYES3+7c60i9xr3QKsDwbWmegP90Mcxahi3DKuFJmR+wKVXBby8gvqDX8X3Kg2VFmdH+6DVxf7y1592r/c2VJnWbsINyS2XEwM/fzkIw1ScFM2lxNNs/1Gt3Zfi//68C63fIkc+GPkaBBhsDwNWdigEkz7pLhGUSNfliV370m7JU6GBsutl7CQKhbCQV3dF7VqgOjSQ08cjwrk5s1ScEYVjXQO+QArqCc2S5vzBG6T+oV27q6CnhZfGdU8m35VHBGQoOFr6/H010G2Gp4Pb1I9363pc0t3/SCZjOoK+ftHJkrIecazXM=",
+        "i18n-prefs": "GBP",
+        "lc-acbuk": "en_GB",
+
+        # 可以加上其他你觉得必要的 Cookie
+    }
+
+
 
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10,cookies=cookies)
         tree = etree.HTML(response.text)
 
-        title_elem = tree.xpath('//*[@id="sellerProfileTriggerId"]')
-        title = title_elem[0].text.strip() if title_elem else None
+        seller_elem = tree.xpath('//*[@id="sellerProfileTriggerId"]')
+        title = seller_elem[0].text.strip() if seller_elem else None
 
         price_elem = tree.xpath('//*[@id="corePrice_feature_div"]/div/div/span[1]/span[1]')
         price = price_elem[0].text.strip() if price_elem else None
@@ -69,19 +80,19 @@ def fetch_amazon_info(asin):
 
 
 # 3. 遍历 ASIN 并填充新的列
-titles = []
+sellers = []
 prices = []
 links = []
 
 for asin in asins:
     title, price = fetch_amazon_info(asin)
-    titles.append(title)
+    sellers.append(title)
     prices.append(price)
     links.append(f"https://www.amazon.co.uk/gp/product/{asin}")
     time.sleep(1)  # 避免被封 IP
 
 # 4. 添加到原 DataFrame
-df['Title'] = titles
+df['seller'] = sellers
 df['Price'] = prices
 df['Link'] = links
 
