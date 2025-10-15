@@ -32,11 +32,12 @@ import pandas as pd
 import requests
 from lxml import etree
 import time
+import numpy as np
 
-# 1. 读取 CSV
-path = r"C:\Users\Administrator\Desktop\asins_mesg (2).csv"
-df = pd.read_csv(path)
-asins = df['ASIN']
+# 1. 读取
+path = r"C:\Users\Administrator\Desktop\demo.xlsx"
+df = pd.read_excel(path,header=None)
+asins = df[0].iloc[103:]
 
 
 # 2. 定义抓取函数
@@ -68,35 +69,46 @@ def fetch_amazon_info(asin):
         tree = etree.HTML(response.text)
 
         seller_elem = tree.xpath('//*[@id="sellerProfileTriggerId"]')
-        title = seller_elem[0].text.strip() if seller_elem else None
+        title = seller_elem[0].text.strip() if seller_elem else np.nan
 
         price_elem = tree.xpath('//*[@id="corePrice_feature_div"]/div/div/span[1]/span[1]')
-        price = price_elem[0].text.strip() if price_elem else None
+        price = price_elem[0].text.strip() if price_elem else np.nan
 
         return title, price
     except Exception as e:
         print(f"抓取 {asin} 出错:", e)
-        return None, None
+        return np.nan, np.nan
+
+def convert_price(price):
+    if price is None:
+        return None
+    try:
+        return float(str(price).replace("£",""))
+    except Exception as e:
+        return None
+
 
 
 # 3. 遍历 ASIN 并填充新的列
 sellers = []
 prices = []
-links = []
+# links = []
 
 for asin in asins:
-    title, price = fetch_amazon_info(asin)
-    sellers.append(title)
-    prices.append(price)
-    links.append(f"https://www.amazon.co.uk/gp/product/{asin}")
+    seller, price = fetch_amazon_info(asin)
+    sellers.append(seller)
+    prices.append(convert_price(price))
+    # prices.append(price)
+    # links.append(f"https://www.amazon.co.uk/gp/product/{asin}")
     time.sleep(1)  # 避免被封 IP
 
 # 4. 添加到原 DataFrame
-df['seller'] = sellers
-df['Price'] = prices
-df['Link'] = links
+df.iloc[103:,1] = sellers
+# df.iloc[180:,4]=prices
+df.iloc[103:,2] = prices
+# df['Link'] = links
 
 # 5. 保存回原 Excel（覆盖原文件）
-df.to_csv(path, index=False)
+df.to_excel(path, index=False, header=False)
 
 print("抓取完成，原 Excel 已更新。")
