@@ -6,7 +6,7 @@ import pandas as pd
 from lxml import etree
 
 # 读取asin
-asin_path = r"C:\Users\Administrator\Desktop\test.xlsx"
+asin_path = r"C:\Users\Administrator\Desktop\10.16.xlsx"
 df = pd.read_excel(asin_path,header=None)
 asinsList = df[0]   # series类型
 # cookies
